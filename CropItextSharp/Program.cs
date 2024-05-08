@@ -11,9 +11,9 @@ namespace PDFCropExample
     class Program
     {
         //Arquivo de Entrada
-        public static string inputFile = @"input.pdf";
-        public static string tmpFolder = @"d:\tmp";
-        public static string processFolder = @"d:\process";
+        public static string inputFile = @"d:\Debug\PDF\dino\SETOR 3I.pdf";
+        public static string tmpFolder = @"d:\Debug\PDF\dino\\tmp";
+        public static string processFolder = @"d:\Debug\PDF\dino\process";
 
         //Dimensões para as páginas Impares
         public static float[] rectanguleOdd =
@@ -165,7 +165,7 @@ namespace PDFCropExample
             {
                 //Encontrar se existe uma linha que começa com Matricula
                 //Se existir pegar a linha toda e cria um grupo de captura
-                var findInscricao = Regex.Matches(lines.ToString(), @"^(?:Matricula:)(?<insc>[^\n]+\n)", options);
+                var findInscricao = Regex.Matches(lines.ToString(), @"^(?:Inscrição:|Matricula:)(?<insc>[^\n]+\n)", options);
 
                 //Remove os espaços em brancos
                 var auxInsc = $"Matricula: {findInscricao[0].Groups["insc"].Value.Replace(" ", "")}";
