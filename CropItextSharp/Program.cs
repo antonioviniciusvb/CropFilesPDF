@@ -2,6 +2,7 @@
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,7 +12,7 @@ namespace PDFCropExample
     class Program
     {
         //Arquivo de Entrada
-        public static string inputFile = @"d:\Debug\PDF\dino\SETOR 3I.pdf";
+        public static string inputFile = @"d:\Debug\PDF\dino\SETOR 08.pdf";
         public static string tmpFolder = @"d:\Debug\PDF\dino\\tmp";
         public static string processFolder = @"d:\Debug\PDF\dino\process";
 
@@ -113,16 +114,18 @@ namespace PDFCropExample
                 {
                     lines.Clear();
                     lines.AppendLine(tmpFile);
-                    lines.Append(PdfTextExtractor.GetTextFromPage(reader, 1, strategy));
+                    lines.Append(PdfTextExtractor.GetTextFromPage(reader, 1, strategy).Replace(" ", ""));
 
                     if (lamina == 1)
                     {
-                        var findContribuinte = FindInText(lines, @"^contribuinte: (?<name>[^\n]+)",
+                        contribuinte.Clear();
+                        inscricao.Clear();
+
+                        var findContribuinte = FindInText(lines, @"^contribuinte:(?<name>[^\n]+)",
                             RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
                         if (findContribuinte.Count == 1)
                         {
-                            contribuinte.Clear();
                             contribuinte.Append(findContribuinte[0].Groups["name"].Value);
                         }
 
@@ -131,20 +134,15 @@ namespace PDFCropExample
 
                         if (findInscricao.Count == 1)
                         {
-                            inscricao.Clear();
                             inscricao.Append(findInscricao[0].Groups["insc"].Value);
                         }
                     }
                     else
                     {
-                        //var findContribuinte = FindInText(lines, $"{contribuinte}",
-                        //                   RegexOptions.IgnoreCase | RegexOptions.Multiline).Count > 0;
-                        var findContribuinte = true;
-
-                        var findInscricao = FindInText(lines, $"^(?:Inscrição|Matricula): {inscricao}",
+                        var findInscricao = FindInText(lines, $"^(?:Inscrição|Matricula):{inscricao}",
                                            RegexOptions.IgnoreCase | RegexOptions.Multiline).Count > 0;
 
-                        if (!(findContribuinte && findContribuinte))
+                        if (!(findInscricao))
                             throw new Exception("Chaves não localizadas");
                     }
 
@@ -162,20 +160,7 @@ namespace PDFCropExample
             var find = Regex.Matches(lines.ToString(), pattern, options);
 
             if (find.Count == 0)
-            {
-                //Encontrar se existe uma linha que começa com Matricula
-                //Se existir pegar a linha toda e cria um grupo de captura
-                var findInscricao = Regex.Matches(lines.ToString(), @"^(?:Inscrição:|Matricula:)(?<insc>[^\n]+\n)", options);
-
-                //Remove os espaços em brancos
-                var auxInsc = $"Matricula: {findInscricao[0].Groups["insc"].Value.Replace(" ", "")}";
-
-                //Tenta novamente encontrar o pattern
-                find = Regex.Matches(auxInsc, pattern, options);
-
-                if (find.Count == 0)
-                    throw new Exception("Pattern não foi encontrado");
-            }
+                throw new Exception("Pattern não foi encontrado");
 
             return find;
         }
